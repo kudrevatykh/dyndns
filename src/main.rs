@@ -33,7 +33,7 @@ impl Service for DynDnsProxy {
             (&Get, "/ip") => {
                 let urls = get_urls() ;
                 let query = req.query().unwrap_or("");
-                let ip = query.split('&').find(|x| x.starts_with("ip=")).unwrap_or("").replace("ip=", "");
+                let ip = query.split('&').find(|x| x.starts_with("myip=")).unwrap_or("").replace("myip=", "");
                 // Run a web query against the web api below
                 let client = Client::configure().connector(HttpsConnector::new(4, &self.0).unwrap()).build(&self.0);
                 let mut future : Box<Future<Item=_,Error=_>> = Box::new(futures::future::ok(Response::new()));
