@@ -31,12 +31,12 @@ impl Service for DynDnsProxy {
             (&Get, "/ip") => {
                 let urls = get_urls() ;
                 let query = req.query().unwrap_or("");
-                let ip = query.split('&').find(|x| x.starts_with("ip=")).unwrap_or("");
+                let ip = query.split('&').find(|x| x.starts_with("ip=")).unwrap_or("").replace("ip=", "");
                 // Run a web query against the web api below
                 let client = Client::configure().build(&self.0);
                 let mut future : Box<Future<Item=_,Error=_>> = Box::new(futures::future::ok(Response::new()));
                 for url in &urls {
-                    let req = Request::new(Get, url.replace("ip=$ip", ip).parse().unwrap());
+                    let req = Request::new(Get, url.replace("$ip", ip).parse().unwrap());
                     let web_res_future : Box<Future<Item=Response,Error=_>> = Box::new(client.request(req));
                     future = Box::new(future.and_then(|r| if r.status().is_success() {web_res_future} else {Box::new(futures::future::err(Error::Status))}));
                 }
