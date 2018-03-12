@@ -1,11 +1,13 @@
 #![deny(warnings)]
 extern crate futures;
 extern crate hyper;
+extern crate hyper_tls;
 extern crate tokio_core;
 
 use futures::{Future, Stream};
 
 use hyper::{Body, Chunk, Client, Get, StatusCode};
+use hyper_tls::HttpsConnector;
 use hyper::error::Error;
 use hyper::header::ContentLength;
 use hyper::server::{Http, Service, Request, Response};
@@ -33,7 +35,7 @@ impl Service for DynDnsProxy {
                 let query = req.query().unwrap_or("");
                 let ip = query.split('&').find(|x| x.starts_with("ip=")).unwrap_or("").replace("ip=", "");
                 // Run a web query against the web api below
-                let client = Client::configure().build(&self.0);
+                let client = Client::configure().connector(HttpsConnector::new(4, &self.0).unwrap()).build(&self.0);
                 let mut future : Box<Future<Item=_,Error=_>> = Box::new(futures::future::ok(Response::new()));
                 for url in &urls {
                     let req = Request::new(Get, url.replace("$ip", &ip).parse().unwrap());
