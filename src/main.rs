@@ -36,7 +36,7 @@ impl Service for DynDnsProxy {
                 let client = Client::configure().build(&self.0);
                 let mut future : Box<Future<Item=_,Error=_>> = Box::new(futures::future::ok(Response::new()));
                 for url in &urls {
-                    let req = Request::new(Get, url.replace("$ip", ip).parse().unwrap());
+                    let req = Request::new(Get, url.replace("$ip", &ip).parse().unwrap());
                     let web_res_future : Box<Future<Item=Response,Error=_>> = Box::new(client.request(req));
                     future = Box::new(future.and_then(|r| if r.status().is_success() {web_res_future} else {Box::new(futures::future::err(Error::Status))}));
                 }
@@ -80,7 +80,7 @@ fn get_urls() -> Vec<String> {
 
 
 fn main() {
-    let addr = "127.0.0.1:1337".parse().unwrap();
+    let addr = "0.0.0.0:1337".parse().unwrap();
 
     let mut core = tokio_core::reactor::Core::new().unwrap();
     let handle = core.handle();
